@@ -394,7 +394,7 @@ if __name__ == '__main__':
 	obj1 = ''
 	obj2 = ''
 	AIFirst = 0		#0 indicates anyone can start first, 1 indicates AI starts first
-	option = sys.argv[1]	
+	option = sys.argv[1]
 	if option == '1':
 		obj1 = Player27()
 		obj2 = Player2()
