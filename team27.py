@@ -1,17 +1,15 @@
 import random
-import copy
-import sys
+import copy		#For copy.deepcopy() 
+import sys 		#For sys.exit()
 
-MAX = 9223372036854775807
+MAX = 9223372036854775807	#For MAX used 
 
 class Player27():
 
 	def __init__(self):
-		self.WINNING_COMBOS = [(0,1,2), (3,4,5), (6,7,8), (0,3,6), (1,4,7), (2,5,8), (0,4,8), (2,4,6)]
-		self.FIRST = False
-		self.ALPHA_BETA_DEPTH = 3
-		self.max = 9223372036854775807
-		self.toggle = False
+		self.ALPHA_BETA_DEPTH = 6	#The depth of the search tree
+		self.toggle = False			#toggle is used in generate_successor(). It is used to decide whether to place x or o in the current turn
+		#TODO : toggle may be slowing the code. May optimize for speed using another mechanism
 
 	def move(self, temp_board, temp_block, old_move, flag):
 		# board: is the list of lists that represents the 9x9 grid
@@ -36,24 +34,23 @@ class Player27():
 
 		next_moves = []
 
+		#Search depth optimization. TODO : Modify and find optimum, may try IDS too
 		if (len(cells) >= 3):
-			self.ALPHA_BETA_DEPTH = 2
+			self.ALPHA_BETA_DEPTH = 4	#If more number of choices, look shallower
 		else:
-			self.ALPHA_BETA_DEPTH = 3
+			self.ALPHA_BETA_DEPTH = 6	#If less number of choices, look deeper
 
 		for cell in cells:
 			self.toggle = False
 			successor_board = self.generate_successor(temp_board, cell, flag)
-			next_moves.append((cell, self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, temp_block, old_move, flag)))
-		_, best_value = max(next_moves, key=lambda x: x[1])
-		return random.choice([best_action for best_action, val in next_moves if val == best_value])
+			#TODO : May need to work on move ordering to make alpha beta pruning more effective
+			next_moves.append((cell, self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, temp_block, old_move, flag)))	#From each successor position, call "min"
 
-		#sys.exit(1)
+		_, best_value = max(next_moves, key=lambda x: x[1])		#Stores coordinates, value in _, best_value respectively.. lamba function - sorting key... Choose "max" from amongst "mins" as we are "max"
+		
+		return random.choice([best_action for best_action, val in next_moves if val == best_value])	#If many choices with equal reward, choose randomly..Python syntactic sugar!!
 
-		#Choose a move based on some algorithm, here it is a random move.
-		#return cells[random.randrange(len(cells))]
-		#return (4,4)
-
+	#This is lifted from evaluator_code.py.. TODO : Will have to change as per rules
 	def determine_blocks_allowed(self, old_move, block_stat):
 		blocks_allowed = []
 		if old_move[0] % 3 == 0 and old_move[1] % 3 == 0:
@@ -82,6 +79,7 @@ class Player27():
 				final_blocks_allowed.append(i)
 		return final_blocks_allowed
 
+	#This is lifted from evaluator_code.py.. TODO : Will have to change as per rules
 	#Gets empty cells from the list of possible blocks. Hence gets valid moves. 
 	def get_empty_out_of(self, gameb, blal,block_stat):
 		cells = []  # it will be list of tuples
@@ -111,6 +109,7 @@ class Player27():
 							cells.append((i,j))
 		return cells
 
+	#Primarily lifted from evaluator_code.py but toggle used to ensure correct o or x is placed
 	def generate_successor(self, temp_board, cell, flag):
 		if self.toggle == True:
 			flag = self.get_opp(flag)
@@ -118,107 +117,89 @@ class Player27():
 		board[cell[0]][cell[1]] = flag
 		return board
 
+	#min from Russell and Norvig
 	def __min_val_ab(self, temp_board, depth, temp_block, old_move, flag, alpha=-(MAX), beta=(MAX)):	
+		#Evaluate state if terminal test results in a true
 		if self.terminal_test(temp_board, depth, temp_block):
 			return self.__eval_state(temp_board, temp_block, flag)
-		val = (self.max)
 
+		val = (MAX)
+
+		#Get list of empty valid cells, TODO : again may need to work on move ordering
 		blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
 		cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
 
 		for cell in cells:
 			self.toggle = True
 			successor_board = self.generate_successor(temp_board, cell, flag)
-			val = min(val, self.__max_val_ab(successor_board,  depth - 1, temp_block, old_move, flag, alpha, beta))
+			val = min(val, self.__max_val_ab(successor_board,  depth-1, temp_block, old_move, flag, alpha, beta))
 			if val <= alpha:
 				return val
 			beta = min(beta, val)
+
 		return val
 
+	#max from Russell and Norvig
 	def __max_val_ab(self, temp_board, depth, temp_block, old_move, flag, alpha=-(MAX), beta=(MAX)):
+		#Evaluate state if terminal test results in a true
 		if self.terminal_test(temp_board, depth, temp_block):
 			return self.__eval_state(temp_board, temp_block, flag)
-		val = -(self.max)
 
+		val = -(MAX)
+
+		#Get list of empty valid cells, TODO : again may need to work on move ordering
 		blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
 		cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
 
 		for cell in cells:
 			self.toggle = False
 			successor_board = self.generate_successor(temp_board, cell, flag)
-			val = max(val, self.__min_val_ab(successor_board, depth, temp_block, old_move, flag, alpha, beta))
+			val = max(val, self.__min_val_ab(successor_board, depth-1, temp_block, old_move, flag, alpha, beta))
 			if val >= beta:
 				return val
 			alpha = max(alpha, val)
+
 		return val
 
+	#Used with toggle
 	def get_opp(self, flag):
 		if flag == 'x':
 			return 'o'
 		else:
 			return 'x'
 
+	#Simple terminal test.. TODO : Possibilities to improve the terminal test
 	def terminal_test(self, temp_board, depth, temp_block):
 		if depth==0:
 			return True
-		#a,b =  self.terminal_state_reached(temp_board, temp_block)
-		#return a
 
+	#Evaluation Function TODO : Add a lot of heuristics
 	def __eval_state(self, temp_board, temp_block, flag):
 		uttt_board = copy.deepcopy(temp_board)
 		mini_board = copy.deepcopy(temp_block)
 
 		mini_board_scores = []
+		#Store probabilities of winning a mini board
 		for val in xrange(9):
-			#print val,mini_board
 			if mini_board[val] == '-':
 				temp_val = self.__evaluate_Mini_Board(uttt_board, val, flag)
-				'''
-				print temp_val,"yolo",val,mini_board
-				print '=========== Game Board ==========='
-				for i in range(9):
-					if i > 0 and i % 3 == 0:
-						print
-					for j in range(9):
-						if j > 0 and j % 3 == 0:
-							print " " + temp_board[i][j],
-						else:
-							print temp_board[i][j],
-
-					print
-				print "==================================yolo"
-				'''
-				mini_board_scores.append((float(temp_val)+800.0)/1600.0)
+				mini_board_scores.append((float(temp_val)+800.0)/1600.0)	#Max value possibly returned by __evaluate_Mini_Board is +800 and min is -800 (A board full of "flags" gives +800 while a board full of "antiflags" gives -800). So scale it between 0 and 1 as probability is needed
 			elif mini_board[val] == flag:
 				mini_board_scores.append(1.0)
 			else:
 				mini_board_scores.append(0.0)
 
-		val  = self.score_big_board(mini_board_scores)
-		'''
-		print '=========== Game Board ==========='
-		for i in range(9):
-			if i > 0 and i % 3 == 0:
-				print
-			for j in range(9):
-				if j > 0 and j % 3 == 0:
-					print " " + temp_board[i][j],
-				else:
-					print temp_board[i][j],
-
-			print
-		print "=================================="
-		'''
-		#if val != 0:
-		#print val
-		#print "Hello"
-		return val#self.score_big_board(mini_board_scores)
+		#Get the bigger picture !!
+		val = self.score_big_board(mini_board_scores)
+	
+		return val
 
 	def __evaluate_Mini_Board(self, temp_board, index, flag):
 		score = 0
 		row_num = 0
 		col_num = 0
 		
+		#Initialize row_num and col_num to point to correct cell in 3x3 mini board using index
 		if index == 0 or index == 1 or index == 2:
 			row_num = 0
 		elif index == 3 or index == 4 or index == 5:
@@ -233,7 +214,7 @@ class Player27():
 		else:
 			col_num = 6
 
-		#For rows
+		#For rows get score
 		for i in xrange(3):
 			flags, anti_flags, blanks = self.count_symbols_row(temp_board, row_num+i, col_num, flag)
 			if flags == 3:
@@ -249,7 +230,7 @@ class Player27():
 			elif anti_flags == 1 and blanks == 2:
 				score -= 1
 
-		#For cols
+		#For cols get score
 		for i in xrange(3):
 			flags, anti_flags, blanks = self.count_symbols_col(temp_board, row_num, col_num+i, flag)
 			if flags == 3:
@@ -265,7 +246,7 @@ class Player27():
 			elif anti_flags == 1 and blanks == 2:
 				score -= 1
 
-		#For diag left top to bottom right
+		#For diag left top to bottom right get score
 		flags = 0 
 		anti_flags = 0
 		blanks = 0
@@ -290,7 +271,7 @@ class Player27():
 		elif anti_flags == 1 and blanks == 2:
 			score -= 1
 
-		#For diag right top to bottom left
+		#For diag right top to bottom left get score
 		flags = 0 
 		anti_flags = 0
 		blanks = 0
@@ -317,6 +298,7 @@ class Player27():
 			
 		return score
 
+	#To count number of "flag", "antiflag" and "-" in a given row
 	def count_symbols_row(self, temp_board, row_num, col_num, flag):
 		flags = 0 
 		anti_flags = 0
@@ -331,6 +313,7 @@ class Player27():
 
 		return flags, anti_flags, blanks
 
+	#To count number of "flag", "antiflag" and "-" in a given column
 	def count_symbols_col(self, temp_board, row_num, col_num, flag):
 		flags = 0 
 		anti_flags = 0
@@ -345,9 +328,12 @@ class Player27():
 
 		return flags, anti_flags, blanks
 
+	#Scores the bigger 3x3 board where each block is considered a cell
+	#mini_board_scores holds the probability of winning that particular block
 	def score_big_board(self, mini_board_scores):
 		score = 0
 
+		#Score the rows
 		for i in [0,3,6]:
 			temp_val = 0
 			for j in [0,1,2]:
@@ -360,7 +346,8 @@ class Player27():
 			else:
 				temp = temp_val - 2
 				score += (10 + (temp * (100-10-1)))
-			
+		
+		#Score the columns
 		for i in [0,1,2]:
 			temp_val = 0
 			for j in [0,3,6]:
@@ -374,6 +361,7 @@ class Player27():
 				temp = temp_val - 2
 				score += (10 + (temp * (100-10-1)))
 
+		#Score diag top left to bottom right
 		temp_val = 0
 		for i in [0,4,8]:
 			temp_val += mini_board_scores[i]
@@ -386,6 +374,7 @@ class Player27():
 			temp = temp_val - 2
 			score += (10 + (temp * (100-10-1)))
 
+		#Score diag top right to bottom left
 		temp_val = 0
 		for i in [2,4,6]:
 			temp_val += mini_board_scores[i]
