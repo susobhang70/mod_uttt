@@ -385,7 +385,7 @@ if __name__ == '__main__':
 
 	if len(sys.argv) != 2:
 		print 'Usage: python simulator.py <option>'
-		print '<option> can be 1 => AI vs. Random player - Anyone can start first'
+		print '<option> can be 1 => AI vs. Random player - Random starts first'
 		print '                2 => Human vs. Random Player'
 		print '                3 => Human vs. Human'
 		print '                4 => AI vs. Random player - AI starts first'
@@ -413,11 +413,7 @@ if __name__ == '__main__':
 		sys.exit(1)
 
 	if AIFirst == 0:
-		num = random.uniform(0,1)
-		if num > 0.5:
-			simulate(obj2, obj1)
-		else:
-			simulate(obj1, obj2)
+		simulate(obj2,obj1)
 	else:
 		simulate(obj1,obj2)
 		
