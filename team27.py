@@ -6,6 +6,7 @@ MAX = 9223372036854775807	#For MAX used
 
 class Player27():
 
+	#TODO : Can have a timer with the help of which best move seen so far can be returned just before the timer runs out
 	def __init__(self):
 		self.ALPHA_BETA_DEPTH = 6	#The depth of the search tree
 		self.toggle = False			#toggle is used in generate_successor(). It is used to decide whether to place x or o in the current turn
