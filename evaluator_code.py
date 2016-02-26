@@ -294,7 +294,7 @@ def simulate(obj1,obj2):
 
 	WINNER = ''
 	MESSAGE = ''
-	TIMEALLOWED = 12000
+	TIMEALLOWED = 12
 	p1_pts=0
 	p2_pts=0
 
@@ -307,14 +307,14 @@ def simulate(obj1,obj2):
 	
 		signal.signal(signal.SIGALRM, handler)
 		signal.alarm(TIMEALLOWED)
-		ret_move_pl1 = pl1.move(temp_board_state, temp_block_stat, old_move, pl1_fl)
+		#ret_move_pl1 = pl1.move(temp_board_state, temp_block_stat, old_move, pl1_fl)
 
-#		try:
-#			ret_move_pl1 = pl1.move(temp_board_state, temp_block_stat, old_move, pl1_fl)
-#		except:
-#			WINNER, MESSAGE = decide_winner_and_get_message('P1', 'L',   'TIMED OUT')
-#			print MESSAGE
-#			break
+		try:
+			ret_move_pl1 = pl1.move(temp_board_state, temp_block_stat, old_move, pl1_fl)
+		except:
+			WINNER, MESSAGE = decide_winner_and_get_message('P1', 'L',   'TIMED OUT')
+			print MESSAGE
+			break
 		signal.alarm(0)
 	
 		# Check if list is tampered.
