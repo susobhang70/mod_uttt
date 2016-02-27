@@ -5,7 +5,7 @@ import time     #For timer functions
 
 MAX = 9223372036854775807	#For MAX used 
 
-class Player27():
+class FoolishPlayer27():
 
 	#TODO : Can have a timer with the help of which best move seen so far can be returned just before the timer runs out
 	def __init__(self):
@@ -19,7 +19,7 @@ class Player27():
 		# board: is the list of lists that represents the 9x9 grid
 		# board[i] can be 'x', 'o' or '-'
 		# block: is a list that represents if a block is won or available to play in
-		# block[i] can be 'x', 'o' or '-' or 'D'
+		# block[i] can be 'x', 'o' or '-'
 		# old_move: is a tuple of integers representing co-ordintates of the last move made. For the first move of game it is (-1,-1)
 		# flag: is your marker. it can be 'x' or 'o'.
 		#List of permitted blocks, based on old move.
@@ -28,12 +28,9 @@ class Player27():
 		if(old_move[0] == -1 and old_move[1] == -1):
 			return (4,4)
 
-		# deepcopy the temp block to avoid shit
-		new_temp_block = copy.deepcopy(temp_block)
-
 		#Get list of empty valid cells
 		blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
-		cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
+		cells = self.get_empty_out_of(temp_board, blocks_allowed,temp_block)
 
 		#If only one move available, don't waste time further
 		if(len(cells) == 1):
@@ -56,9 +53,8 @@ class Player27():
 			for cell in cells:
 				self.toggle = False
 				successor_board = self.generate_successor(temp_board, cell, flag)
-				successor_block = self.__update_block(successor_board, new_temp_block, cell)
 				#TODO : May need to work on move ordering to make alpha beta pruning more effective
-				next_moves.append((cell, self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, successor_block, cell, flag)))	#From each successor position, call "min"
+				next_moves.append((cell, self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, temp_block, old_move, flag)))	#From each successor position, call "min"
 
 		print self.ALPHA_BETA_DEPTH,"ALPHA_BETA_DEPTH"
 		_, best_value = max(next_moves, key=lambda x: x[1])		#Stores coordinates, value in _, best_value respectively.. lamba function - sorting key... Choose "max" from amongst "mins" as we are "max"
@@ -149,13 +145,10 @@ class Player27():
 		blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
 		cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
 
-		# print old_move, depth
-
 		for cell in cells:
 			self.toggle = True
 			successor_board = self.generate_successor(temp_board, cell, flag)
-			successor_block = self.__update_block(successor_board, temp_block, cell)
-			val = min(val, self.__max_val_ab(successor_board,  depth-1, successor_block, cell, flag, alpha, beta))
+			val = min(val, self.__max_val_ab(successor_board,  depth-1, temp_block, old_move, flag, alpha, beta))
 			if val <= alpha:
 				return val
 			beta = min(beta, val)
@@ -174,13 +167,10 @@ class Player27():
 		blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
 		cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
 
-		# print old_move, depth
-
 		for cell in cells:
 			self.toggle = False
 			successor_board = self.generate_successor(temp_board, cell, flag)
-			successor_block = self.__update_block(successor_board, temp_block, cell)
-			val = max(val, self.__min_val_ab(successor_board, depth - 1, successor_block, cell, flag, alpha, beta))
+			val = max(val, self.__min_val_ab(successor_board, depth-1, temp_block, old_move, flag, alpha, beta))
 			if val >= beta:
 				return val
 			alpha = max(alpha, val)
@@ -287,7 +277,7 @@ class Player27():
 				anti_flags += 1
 
 		if flags == 3:
-			score += 100
+				score += 100
 		elif flags == 2 and blanks == 1:
 			score += 10
 		elif flags == 1 and blanks == 2:
@@ -312,7 +302,7 @@ class Player27():
 				anti_flags += 1
 
 		if flags == 3:
-			score += 100
+				score += 100
 		elif flags == 2 and blanks == 1:
 			score += 10
 		elif flags == 1 and blanks == 2:
@@ -416,62 +406,3 @@ class Player27():
 			score += (10 + (temp * (100-10-1)))
 
 		return score
-
-	def __update_block(self, board, original_block, cell):
-
-		block = copy.deepcopy(original_block)
-
-		# Finds the block number where the move has been made
-		index_of_block = (cell[0] / 3) * 3 + (cell[1] / 3)
-
-		top_x = cell[0] - (cell[0] % 3)
-		top_y = cell[1] - (cell[1] % 3)
-
-		for i in xrange(3):
-			#Rows
-			if board[top_x + i][top_y] == board[top_x + i][top_y + 1] and board[top_x + i][top_y + 1] == board[top_x + i][top_y + 2]:
-				if board[top_x + i][top_y] == 'x':
-					block[index_of_block] = 'x'
-					return block
-
-				elif board[top_x + i][top_y] == 'o':
-					block[index_of_block] = 'o'
-					return block
-			
-			#Columns
-			elif board[top_x][top_y + i] == board[top_x + 1][top_y + i] and board[top_x + 1][top_y + i] == board[top_x + 2][top_y + i]:
-				if board[top_x][top_y + i] == 'x':
-					block[index_of_block] = 'x'
-					return block
-
-				elif board[top_x][top_y + i] == 'o':
-					block[index_of_block] = 'o'
-					return block
-
-		#Top left to bottom right
-		if board[top_x][top_y] == board[top_x + 1][top_y + 1] and board[top_x + 1][top_y + 1] == board[top_x + 2][top_y + 2]:
-			if board[top_x][top_y] == 'x':
-				block[index_of_block] = 'x'
-				return block
-
-			elif board[top_x][top_y] == 'o':
-				block[index_of_block] = 'o'
-				return block
-
-		#Bottom left to top right
-		if board[top_x + 2][top_y] == board[top_x + 1][top_y + 1] and board[top_x + 1][top_y + 1] == board[top_x][top_y + 2]:
-			if board[top_x + 2][top_y] == 'x':
-				block[index_of_block] = 'x'
-				return block
-
-			elif board[top_x + 2][top_y] == 'o':
-				block[index_of_block] = 'o'
-				return block
-
-		for i in xrange(3):
-			for j in xrange(3):
-				if board[top_x + i][top_y + i] == '-':
-					return block
-
-		block[index_of_block] = 'D'
-		return block

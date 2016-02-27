@@ -17,6 +17,7 @@ import sys
 import random
 import signal
 from team27 import Player27
+from foolish_player27 import FoolishPlayer27
 
 def handler(signum, frame):
     #print 'Signal handler called with signal', signum
@@ -385,15 +386,18 @@ if __name__ == '__main__':
 
 	if len(sys.argv) != 2:
 		print 'Usage: python simulator.py <option>'
-		print '<option> can be 1 => AI vs. Random player - Random starts first'
-		print '                2 => Human vs. Random Player'
+		print '<option> can be 1 => Random player vs AI - Random starts first'
+		print '                2 => Human vs. AI'
 		print '                3 => Human vs. Human'
 		print '                4 => AI vs. Random player - AI starts first'
+		print '				   5 => AI vs FoolishAI - AI moves first'
+		print '				   6 => FoolishAI vs AI - FoolishAI moves first'
+		print '				   7 => AI1 vs AI2 - AI1 moves first'
 		sys.exit(1)
  
 	obj1 = ''
 	obj2 = ''
-	AIFirst = 0		#0 indicates anyone can start first, 1 indicates AI starts first
+	AIFirst = 0		#0 indicates random/foolish, 1 indicates AI starts first
 	option = sys.argv[1]
 	if option == '1':
 		obj1 = Player27()
@@ -408,6 +412,16 @@ if __name__ == '__main__':
 		obj1 = Player27()
 		obj2 = Player2()
 		AIFirst = 1
+	elif option == '5':
+		obj1 = Player27()
+		obj2 = FoolishPlayer27()
+		AIFirst = 1
+	elif option == '6':
+		obj1 = Player27()
+		obj2 = FoolishPlayer27()
+	elif option == '7':
+		obj1 = Player27()
+		obj2 = Player27()
 	else:
 		print 'Invalid option'
 		sys.exit(1)
