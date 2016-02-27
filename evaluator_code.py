@@ -18,6 +18,7 @@ import random
 import signal
 from team27 import Player27
 from foolish_player27 import FoolishPlayer27
+from mark1_team27 import Mark1Player27
 
 def handler(signum, frame):
     #print 'Signal handler called with signal', signum
@@ -393,6 +394,8 @@ if __name__ == '__main__':
 		print '				   5 => AI vs FoolishAI - AI moves first'
 		print '				   6 => FoolishAI vs AI - FoolishAI moves first'
 		print '				   7 => AI1 vs AI2 - AI1 moves first'
+		print '				   8 => AI vs OldAI - OldAI moves first'
+
 		sys.exit(1)
  
 	obj1 = ''
@@ -422,6 +425,10 @@ if __name__ == '__main__':
 	elif option == '7':
 		obj1 = Player27()
 		obj2 = Player27()
+	elif option == '8':
+		obj1 = Player27()
+		obj2 = Mark1Player27()
+		AIFirst = 1
 	else:
 		print 'Invalid option'
 		sys.exit(1)
@@ -430,5 +437,3 @@ if __name__ == '__main__':
 		simulate(obj2,obj1)
 	else:
 		simulate(obj1,obj2)
-		
-	

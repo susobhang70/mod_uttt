@@ -5,7 +5,7 @@ import time     #For timer functions
 
 MAX = 9223372036854775807	#For MAX used 
 
-class Player27():
+class Mark1Player27():
 
 	#TODO : Can have a timer with the help of which best move seen so far can be returned just before the timer runs out
 	def __init__(self):
@@ -13,8 +13,7 @@ class Player27():
 		self.toggle = False			#toggle is used in generate_successor(). It is used to decide whether to place x or o in the current turn
 		#TODO : toggle may be slowing the code. May optimize for speed using another mechanism
 		self.start_time = 0.0
-		self.ALLOWED_TIME = 11.5	# Allowed time for each move
-		self.freemoveflag = 0      # Flag to check if current move results in free move
+		self.ALLOWED_TIME = 11.5
 
 	def move(self, temp_board, temp_block, old_move, flag):
 		# board: is the list of lists that represents the 9x9 grid
@@ -58,22 +57,8 @@ class Player27():
 				self.toggle = False
 				successor_board = self.generate_successor(temp_board, cell, flag)
 				successor_block = self.__update_block(successor_board, new_temp_block, cell)
-
-				# Calculates valid moves for opponent
-				successor_blocks_allowed = self.determine_blocks_allowed(cell, successor_block)
-				successor_cells = self.get_empty_out_of(successor_board, successor_blocks_allowed, successor_block)
-
-				# Stores the flag if the the played move results in freemove
-				successor_freemoveflag = self.freemoveflag
-
-				minvalue = self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, successor_block, cell, flag, successor_cells)
-
-				# Penalizes the move resulting in freemove for opponent
-				if (successor_freemoveflag == 1):
-					minvalue -= 50
-
 				#TODO : May need to work on move ordering to make alpha beta pruning more effective
-				next_moves.append((cell, minvalue))	#From each successor position, call "min"
+				next_moves.append((cell, self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, successor_block, cell, flag)))	#From each successor position, call "min"
 
 		print self.ALPHA_BETA_DEPTH,"ALPHA_BETA_DEPTH"
 		_, best_value = max(next_moves, key=lambda x: x[1])		#Stores coordinates, value in _, best_value respectively.. lamba function - sorting key... Choose "max" from amongst "mins" as we are "max"
@@ -129,7 +114,6 @@ class Player27():
 
 		# If all the possible blocks are full, you can move anywhere
 		if cells == []:
-			self.freemoveflag = 1
 			new_blal = []
 			all_blal = [0,1,2,3,4,5,6,7,8]
 			for i in all_blal:
@@ -143,9 +127,6 @@ class Player27():
 					for j in range(id2*3,id2*3+3):
 						if gameb[i][j] == '-':
 							cells.append((i,j))
-
-		else:
-			self.freemoveflag = 0
 		return cells
 
 	#Primarily lifted from evaluator_code.py but toggle used to ensure correct o or x is placed
@@ -157,7 +138,7 @@ class Player27():
 		return board
 
 	#min from Russell and Norvig
-	def __min_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(MAX), beta=(MAX)):	
+	def __min_val_ab(self, temp_board, depth, temp_block, old_move, flag, alpha=-(MAX), beta=(MAX)):	
 		#Evaluate state if terminal test results in a true
 		if self.terminal_test(temp_board, depth, temp_block) or ((time.time() - self.start_time) >= self.ALLOWED_TIME):
 			return self.__eval_state(temp_board, temp_block, flag)
@@ -165,8 +146,8 @@ class Player27():
 		val = (MAX)
 
 		#Get list of empty valid cells, TODO : again may need to work on move ordering
-		# blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
-		# cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
+		blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
+		cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
 
 		# print old_move, depth
 
@@ -174,21 +155,7 @@ class Player27():
 			self.toggle = True
 			successor_board = self.generate_successor(temp_board, cell, flag)
 			successor_block = self.__update_block(successor_board, temp_block, cell)
-
-			# Calculates valid moves for opponent
-			successor_blocks_allowed = self.determine_blocks_allowed(cell, successor_block)
-			successor_cells = self.get_empty_out_of(successor_board, successor_blocks_allowed, successor_block)
-
-			# Stores the flag if the the played move results in freemove
-			successor_freemoveflag = self.freemoveflag
-
-			maxvalue = self.__max_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
-
-			# Penalizes the move resulting in freemove for opponent
-			if (successor_freemoveflag == 1):
-				maxvalue += 50
-
-			val = min(val, maxvalue)
+			val = min(val, self.__max_val_ab(successor_board,  depth-1, successor_block, cell, flag, alpha, beta))
 			if val <= alpha:
 				return val
 			beta = min(beta, val)
@@ -196,7 +163,7 @@ class Player27():
 		return val
 
 	#max from Russell and Norvig
-	def __max_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(MAX), beta=(MAX)):
+	def __max_val_ab(self, temp_board, depth, temp_block, old_move, flag, alpha=-(MAX), beta=(MAX)):
 		#Evaluate state if terminal test results in a true
 		if self.terminal_test(temp_board, depth, temp_block) or ((time.time() - self.start_time) >= self.ALLOWED_TIME):
 			return self.__eval_state(temp_board, temp_block, flag)
@@ -204,8 +171,8 @@ class Player27():
 		val = -(MAX)
 
 		#Get list of empty valid cells, TODO : again may need to work on move ordering
-		# blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
-		# cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
+		blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
+		cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
 
 		# print old_move, depth
 
@@ -213,21 +180,7 @@ class Player27():
 			self.toggle = False
 			successor_board = self.generate_successor(temp_board, cell, flag)
 			successor_block = self.__update_block(successor_board, temp_block, cell)
-
-			# Calculates valid moves for opponent
-			successor_blocks_allowed = self.determine_blocks_allowed(cell, successor_block)
-			successor_cells = self.get_empty_out_of(successor_board, successor_blocks_allowed, successor_block)
-
-			# Stores the flag if the the played move results in freemove
-			successor_freemoveflag = self.freemoveflag
-
-			minvalue = self.__min_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
-
-			# Penalizes the move resulting in freemove for opponent
-			if (successor_freemoveflag == 1):
-				minvalue -= 50
-
-			val = max(val, minvalue)
+			val = max(val, self.__min_val_ab(successor_board, depth - 1, successor_block, cell, flag, alpha, beta))
 			if val >= beta:
 				return val
 			alpha = max(alpha, val)
