@@ -1,7 +1,7 @@
 import random
 import copy		#For copy.deepcopy() 
 import sys 		#For sys.exit()
-import signal   #For signal.signal() and signal.alarm()
+import time     #For timer functions
 
 MAX = 9223372036854775807	#For MAX used 
 
@@ -38,32 +38,26 @@ class Player27():
 
 		#Search depth optimization. TODO : Modify and find optimum, may try IDS too
 		if (len(cells) >= 3):
-			self.ALPHA_BETA_DEPTH = 3	#If more number of choices, look shallower
+			self.ALPHA_BETA_DEPTH = 2	#If more number of choices, look shallower
 		else:
-			self.ALPHA_BETA_DEPTH = 6	#If less number of choices, look deeper
+			self.ALPHA_BETA_DEPTH = 3	#If less number of choices, look deeper
 
 		ALLOWED_TIME = 11
 		
 		for cell in cells:
-			signal.signal(signal.SIGALRM, self.handler)
-			signal.alarm(ALLOWED_TIME)
-			try:
-				self.toggle = False
-				successor_board = self.generate_successor(temp_board, cell, flag)
-				#TODO : May need to work on move ordering to make alpha beta pruning more effective
-				next_moves.append((cell, self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, temp_block, old_move, flag)))	#From each successor position, call "min"
-			except:
-				break
-			signal.alarm(0)
+			self.toggle = False
+			successor_board = self.generate_successor(temp_board, cell, flag)
+			#TODO : May need to work on move ordering to make alpha beta pruning more effective
+			next_moves.append((cell, self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, temp_block, old_move, flag)))	#From each successor position, call "min"
 
 		_, best_value = max(next_moves, key=lambda x: x[1])		#Stores coordinates, value in _, best_value respectively.. lamba function - sorting key... Choose "max" from amongst "mins" as we are "max"
 		
 		return random.choice([best_action for best_action, val in next_moves if val == best_value])	#If many choices with equal reward, choose randomly..Python syntactic sugar!!
 
-	#Time out handler
-	def handler(signum, frame):
-	    #print 'Signal handler called with signal', signum
-	    raise TimedOutExc()
+	# #Time out handler
+	# def handler(signum, frame):
+	#     #print 'Signal handler called with signal', signum
+	#     raise TimedOutExc()
 
 	#This is lifted from evaluator_code.py.. TODO : Will have to change as per rules
 	def determine_blocks_allowed(self, old_move, block_stat):
