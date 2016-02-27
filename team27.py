@@ -12,6 +12,8 @@ class Player27():
 		self.ALPHA_BETA_DEPTH = 6	#The depth of the search tree
 		self.toggle = False			#toggle is used in generate_successor(). It is used to decide whether to place x or o in the current turn
 		#TODO : toggle may be slowing the code. May optimize for speed using another mechanism
+		self.start_time = 0.0
+		self.ALLOWED_TIME = 11.5
 
 	def move(self, temp_board, temp_block, old_move, flag):
 		# board: is the list of lists that represents the 9x9 grid
@@ -41,15 +43,20 @@ class Player27():
 			self.ALPHA_BETA_DEPTH = 2	#If more number of choices, look shallower
 		else:
 			self.ALPHA_BETA_DEPTH = 3	#If less number of choices, look deeper
-
-		ALLOWED_TIME = 11
 		
-		for cell in cells:
-			self.toggle = False
-			successor_board = self.generate_successor(temp_board, cell, flag)
-			#TODO : May need to work on move ordering to make alpha beta pruning more effective
-			next_moves.append((cell, self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, temp_block, old_move, flag)))	#From each successor position, call "min"
+		self.start_time = time.time()
 
+		while True:
+			if time.time() - self.start_time >= self.ALLOWED_TIME:
+				break
+			self.ALPHA_BETA_DEPTH += 1
+			for cell in cells:
+				self.toggle = False
+				successor_board = self.generate_successor(temp_board, cell, flag)
+				#TODO : May need to work on move ordering to make alpha beta pruning more effective
+				next_moves.append((cell, self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, temp_block, old_move, flag)))	#From each successor position, call "min"
+
+		print self.ALPHA_BETA_DEPTH,"ALPHA_BETA_DEPTH"
 		_, best_value = max(next_moves, key=lambda x: x[1])		#Stores coordinates, value in _, best_value respectively.. lamba function - sorting key... Choose "max" from amongst "mins" as we are "max"
 		
 		return random.choice([best_action for best_action, val in next_moves if val == best_value])	#If many choices with equal reward, choose randomly..Python syntactic sugar!!
@@ -129,7 +136,7 @@ class Player27():
 	#min from Russell and Norvig
 	def __min_val_ab(self, temp_board, depth, temp_block, old_move, flag, alpha=-(MAX), beta=(MAX)):	
 		#Evaluate state if terminal test results in a true
-		if self.terminal_test(temp_board, depth, temp_block):
+		if self.terminal_test(temp_board, depth, temp_block) or ((time.time() - self.start_time) >= self.ALLOWED_TIME):
 			return self.__eval_state(temp_board, temp_block, flag)
 
 		val = (MAX)
@@ -151,7 +158,7 @@ class Player27():
 	#max from Russell and Norvig
 	def __max_val_ab(self, temp_board, depth, temp_block, old_move, flag, alpha=-(MAX), beta=(MAX)):
 		#Evaluate state if terminal test results in a true
-		if self.terminal_test(temp_board, depth, temp_block):
+		if self.terminal_test(temp_board, depth, temp_block) or ((time.time() - self.start_time) >= self.ALLOWED_TIME):
 			return self.__eval_state(temp_board, temp_block, flag)
 
 		val = -(MAX)
@@ -181,6 +188,8 @@ class Player27():
 	def terminal_test(self, temp_board, depth, temp_block):
 		if depth==0:
 			return True
+		else:
+			return False
 
 	#Evaluation Function TODO : Add a lot of heuristics
 	def __eval_state(self, temp_board, temp_block, flag):

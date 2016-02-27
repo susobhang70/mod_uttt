@@ -4,7 +4,7 @@ AI = 0
 Timeout = 0
 Random = 0
 
-for i in range(2):
+for i in range(100):
 	os.system("python poll_evaluator_code.py 1 > results")
 
 	file = open("results")
