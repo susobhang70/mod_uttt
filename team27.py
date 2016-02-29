@@ -54,6 +54,7 @@ class Player27():
 			if time.time() - self.start_time >= self.ALLOWED_TIME:
 				break
 			self.ALPHA_BETA_DEPTH += 1
+			next_moves = []
 			for cell in cells:
 				self.toggle = False
 				successor_board = self.generate_successor(temp_board, cell, flag)
@@ -69,12 +70,18 @@ class Player27():
 				minvalue = self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, successor_block, cell, flag, successor_cells)
 
 				# Penalizes the move resulting in freemove for opponent
-				if (successor_freemoveflag == 1):
-					minvalue -= 50
+				#if (successor_freemoveflag == 1):
+					#minvalue -= 50
 
 				#TODO : May need to work on move ordering to make alpha beta pruning more effective
 				next_moves.append((cell, minvalue))	#From each successor position, call "min"
+				#print next_moves
+			sorted(next_moves, key=lambda x: x[1], reverse = True)
+			cells = []
+			for z in next_moves:
+				cells.append(z[0])
 
+		#print next_moves
 		print self.ALPHA_BETA_DEPTH,"ALPHA_BETA_DEPTH"
 		_, best_value = max(next_moves, key=lambda x: x[1])		#Stores coordinates, value in _, best_value respectively.. lamba function - sorting key... Choose "max" from amongst "mins" as we are "max"
 		
@@ -185,8 +192,8 @@ class Player27():
 			maxvalue = self.__max_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
 
 			# Penalizes the move resulting in freemove for opponent
-			if (successor_freemoveflag == 1):
-				maxvalue += 50
+			#if (successor_freemoveflag == 1):
+				#maxvalue += 50
 
 			val = min(val, maxvalue)
 			if val <= alpha:
@@ -224,8 +231,8 @@ class Player27():
 			minvalue = self.__min_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
 
 			# Penalizes the move resulting in freemove for opponent
-			if (successor_freemoveflag == 1):
-				minvalue -= 50
+			#if (successor_freemoveflag == 1):
+				#minvalue -= 50
 
 			val = max(val, minvalue)
 			if val >= beta:
@@ -243,7 +250,7 @@ class Player27():
 
 	#Simple terminal test.. TODO : Possibilities to improve the terminal test
 	def terminal_test(self, temp_board, depth, temp_block):
-		if depth==0:
+		if depth == 0 or self.__check_end(temp_block) == True:
 			return True
 		else:
 			return False
@@ -411,6 +418,8 @@ class Player27():
 		#Score the rows
 		for i in [0,3,6]:
 			temp_val = 0
+			if self.__check_xo_together(mini_board_scores, (i+0, i+1, i+2)) == True:
+				continue
 			for j in [0,1,2]:
 				temp_val += mini_board_scores[i+j]
 			if temp_val >= 0 and temp_val < 1:
@@ -425,6 +434,8 @@ class Player27():
 		#Score the columns
 		for i in [0,1,2]:
 			temp_val = 0
+			if self.__check_xo_together(mini_board_scores, (i+0, i+3, i+6)) == True:
+				continue
 			for j in [0,3,6]:
 				temp_val += mini_board_scores[i+j]
 			if temp_val >= 0 and temp_val < 1:
@@ -438,29 +449,31 @@ class Player27():
 
 		#Score diag top left to bottom right
 		temp_val = 0
-		for i in [0,4,8]:
-			temp_val += mini_board_scores[i]
-		if temp_val >= 0 and temp_val < 1:
-			score += temp_val
-		elif temp_val >= 1 and temp_val < 2:
-			temp = temp_val - 1
-			score += (1 + (temp * (10-1)))
-		else:
-			temp = temp_val - 2
-			score += (10 + (temp * (100-10-1)))
+		if self.__check_xo_together(mini_board_scores, (0, 4, 8)) == False:
+			for i in [0,4,8]:
+				temp_val += mini_board_scores[i]
+			if temp_val >= 0 and temp_val < 1:
+				score += temp_val
+			elif temp_val >= 1 and temp_val < 2:
+				temp = temp_val - 1
+				score += (1 + (temp * (10-1)))
+			else:
+				temp = temp_val - 2
+				score += (10 + (temp * (100-10-1)))
 
 		#Score diag top right to bottom left
 		temp_val = 0
-		for i in [2,4,6]:
-			temp_val += mini_board_scores[i]
-		if temp_val >= 0 and temp_val < 1:
-			score += temp_val
-		elif temp_val >= 1 and temp_val < 2:
-			temp = temp_val - 1
-			score += (1 + (temp * (10-1)))
-		else:
-			temp = temp_val - 2
-			score += (10 + (temp * (100-10-1)))
+		if self.__check_xo_together(mini_board_scores, (2, 4, 6)) == False:
+			for i in [2,4,6]:
+				temp_val += mini_board_scores[i]
+			if temp_val >= 0 and temp_val < 1:
+				score += temp_val
+			elif temp_val >= 1 and temp_val < 2:
+				temp = temp_val - 1
+				score += (1 + (temp * (10-1)))
+			else:
+				temp = temp_val - 2
+				score += (10 + (temp * (100-10-1)))
 
 		return score
 
@@ -522,3 +535,39 @@ class Player27():
 
 		block[index_of_block] = 'D'
 		return block
+
+	#Checks if the game has ended
+	def __check_end(self, block):
+		for i in [0, 3, 6]:
+			if block[i + 0] == block[i + 1] and block[i + 1] == block[i + 2] and (block[i] == 'x' or block[i] == 'o'):
+				return True
+		for i in [0, 1, 2]:
+			if block[i + 0] == block[i + 3] and block[i + 3] == block[i + 6] and (block[i] == 'x' or block[i] == 'o'):
+				return True
+
+		if block[0] == block[4] and block[4] == block[8] and (block[0] == 'x' or block[0] == 'o'):
+			return True
+
+		if block[2] == block[4] and block[4] == block[6] and (block[2] == 'x' or block[2] == 'o'):
+			return True
+
+		for i in xrange(9):
+			if block[i] == '-':
+				return False
+
+		return True
+
+	#Used in score_big_board while evaluating probabilites
+	def __check_xo_together(self, block, arrs):
+		xs = 0
+		os = 0
+		for i in arrs:
+			if block[i] == 1:
+				xs += 1
+			elif block[i] == 0:
+				os += 1
+
+		if xs > 0 and os > 0:
+			return True
+		else:
+			return False

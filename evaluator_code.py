@@ -279,6 +279,27 @@ def print_lists(gb, bs):
 	print "=================================="
 	print
 	
+def generate_situation(board, block):
+ 
+    board = [['x', 'x', '-', 'o', '-', '-', 'o', '-', '-'],
+             ['-', 'x', '-', '-', 'o', '-', '-', '-', '-'],
+             ['-', '-', 'o', '-', '-', 'o', '-', 'x', '-'],
+ 
+             ['x', '-', '-', '-', '-', '-', 'x', '-', '-'],
+             ['x', '-', '-', 'x', 'o', '-', '-', 'x', '-'],
+             ['x', '-', 'o', 'x', 'x', 'o', '-', '-', 'x'],
+ 
+             ['o', 'o', '-', 'x', '-', '-', '-', '-', '-'],
+             ['o', '-', '-', 'o', 'o', 'o', 'x', '-', 'o'],
+             ['-', 'o', '-', 'x', '-', 'o', '-', 'x', '-']]
+ 
+    block = ['-', 'o', '-',
+             'x', '-', 'x',
+             '-', 'o', '-']
+ 
+    old_move = (6, 1)
+ 
+    return board, block, old_move
 
 def simulate(obj1,obj2):
 	
@@ -300,6 +321,7 @@ def simulate(obj1,obj2):
 	p1_pts=0
 	p2_pts=0
 
+	#game_board, block_stat, old_move = generate_situation(game_board, block_stat)
 	print_lists(game_board, block_stat)
 
 	while(1): # Main game loop
@@ -391,11 +413,11 @@ if __name__ == '__main__':
 		print '                2 => Human vs. AI'
 		print '                3 => Human vs. Human'
 		print '                4 => AI vs. Random player - AI starts first'
-		print '				   5 => AI vs FoolishAI - AI moves first'
-		print '				   6 => FoolishAI vs AI - FoolishAI moves first'
-		print '				   7 => AI1 vs AI2 - AI1 moves first'
-		print '				   8 => AI vs OldAI - OldAI moves first'
-
+		print '                5 => AI vs FoolishAI - AI moves first'
+		print '                6 => FoolishAI vs AI - FoolishAI moves first'
+		print '                7 => AI1 vs AI2 - AI1 moves first'
+		print '                8 => AI vs OldAI - OldAI moves first'
+		print '                9 => AI vs OldAI - AI moves first'
 		sys.exit(1)
  
 	obj1 = ''
@@ -426,6 +448,9 @@ if __name__ == '__main__':
 		obj1 = Player27()
 		obj2 = Player27()
 	elif option == '8':
+		obj1 = Player27()
+		obj2 = Mark1Player27()
+	elif option == '9':
 		obj1 = Player27()
 		obj2 = Mark1Player27()
 		AIFirst = 1
