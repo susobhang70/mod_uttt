@@ -67,6 +67,9 @@ class Player27():
 				# Stores the flag if the the played move results in freemove
 				successor_freemoveflag = self.freemoveflag
 
+				if(self.__check_end(successor_block)):
+					return cell
+
 				minvalue = self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, successor_block, cell, flag, successor_cells)
 
 				# Penalizes the move resulting in freemove for opponent
@@ -189,6 +192,9 @@ class Player27():
 			# Stores the flag if the the played move results in freemove
 			successor_freemoveflag = self.freemoveflag
 
+			if(self.__check_end(successor_block)):
+				return 0
+
 			maxvalue = self.__max_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
 
 			# Penalizes the move resulting in freemove for opponent
@@ -228,6 +234,9 @@ class Player27():
 			# Stores the flag if the the played move results in freemove
 			successor_freemoveflag = self.freemoveflag
 
+			if(self.__check_end(successor_block)):
+				return 1000
+
 			minvalue = self.__min_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
 
 			# Penalizes the move resulting in freemove for opponent
@@ -250,7 +259,8 @@ class Player27():
 
 	#Simple terminal test.. TODO : Possibilities to improve the terminal test
 	def terminal_test(self, temp_board, depth, temp_block):
-		if depth == 0 or self.__check_end(temp_block) == True:
+		# if depth == 0 or self.__check_end(temp_block) == True:
+		if depth == 0:
 			return True
 		else:
 			return False
