@@ -281,23 +281,23 @@ def print_lists(gb, bs):
 	
 def generate_situation(board, block):
  
-    board = [['x', 'x', '-', 'o', '-', '-', 'o', '-', '-'],
-             ['-', 'x', '-', '-', 'o', '-', '-', '-', '-'],
-             ['-', '-', 'o', '-', '-', 'o', '-', 'x', '-'],
+    board = [['o', '-', '-', '-', '-', '-', '-', '-', '-'],
+             ['x', '-', '-', '-', '-', '-', '-', '-', '-'],
+             ['-', '-', 'o', 'o', '-', 'o', '-', '-', '-'],
  
-             ['x', '-', '-', '-', '-', '-', 'x', '-', '-'],
-             ['x', '-', '-', 'x', 'o', '-', '-', 'x', '-'],
-             ['x', '-', 'o', 'x', 'x', 'o', '-', '-', 'x'],
+             ['-', '-', '-', 'x', '-', '-', 'x', '-', '-'],
+             ['-', '-', '-', 'x', 'o', '-', '-', '-', 'x'],
+             ['x', 'x', 'x', '-', '-', '-', '-', '-', 'x'],
  
-             ['o', 'o', '-', 'x', '-', '-', '-', '-', '-'],
-             ['o', '-', '-', 'o', 'o', 'o', 'x', '-', 'o'],
-             ['-', 'o', '-', 'x', '-', 'o', '-', 'x', '-']]
+             ['-', '-', '-', '-', 'o', '-', 'o', '-', '-'],
+             ['-', '-', '-', '-', 'o', '-', '-', 'o', '-'],
+             ['-', '-', '-', '-', 'o', '-', '-', 'x', 'o']]
  
-    block = ['-', 'o', '-',
-             'x', '-', 'x',
-             '-', 'o', '-']
+    block = ['-', '-', '-',
+             'x', '-', '-',
+             '-', 'o', 'o']
  
-    old_move = (6, 1)
+    old_move = (7, 7)
  
     return board, block, old_move
 
@@ -317,11 +317,11 @@ def simulate(obj1,obj2):
 
 	WINNER = ''
 	MESSAGE = ''
-	TIMEALLOWED = 12
+	TIMEALLOWED = 120
 	p1_pts=0
 	p2_pts=0
 
-	#game_board, block_stat, old_move = generate_situation(game_board, block_stat)
+	game_board, block_stat, old_move = generate_situation(game_board, block_stat)
 	print_lists(game_board, block_stat)
 
 	while(1): # Main game loop

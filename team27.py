@@ -235,8 +235,8 @@ class Player27():
 				maxvalue = self.__max_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
 
 			# Penalizes the move resulting in freemove for opponent
-			#if (successor_freemoveflag == 1):
-				#maxvalue += 50
+			if (successor_freemoveflag == 1 and (depth - 1) == 0):
+				maxvalue += 10
 
 			val = min(val, maxvalue)
 			if val <= alpha:
@@ -287,8 +287,8 @@ class Player27():
 				minvalue = self.__min_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
 
 			# Penalizes the move resulting in freemove for opponent
-			#if (successor_freemoveflag == 1):
-				#minvalue -= 50
+			if (successor_freemoveflag == 1 and (depth - 1) == 0):
+				minvalue -= 10
 
 			val = max(val, minvalue)
 			if val >= beta:
