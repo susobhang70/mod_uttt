@@ -46,17 +46,22 @@ class Player27():
 		old_next_moves = []
 
 		#Search depth optimization. TODO : Modify and find optimum, may try IDS too
-		if (len(cells) >= 3):
-			self.ALPHA_BETA_DEPTH = 2	#If more number of choices, look shallower
+		if len(cells) in (1,2):
+			self.ALPHA_BETA_DEPTH = 6	#If less number of choices, look deeper
+		elif len(cells) in (3,4,5):
+			self.ALPHA_BETA_DEPTH = 5
+		elif len(cells) in (6,7):
+			self.ALPHA_BETA_DEPTH = 4	#If more number of choices, look shallower
+		elif len(cells) in (8,9):
+			self.ALPHA_BETA_DEPTH = 3
 		else:
-			self.ALPHA_BETA_DEPTH = 3	#If less number of choices, look deeper
+			self.ALPHA_BETA_DEPTH = 2
 		
 		self.start_time = time.time()
 
 		while True:
 			if time.time() - self.start_time >= self.ALLOWED_TIME:
 				break
-			self.ALPHA_BETA_DEPTH += 1
 			old_next_moves = copy.deepcopy(next_moves)
 			next_moves = []
 			minvalue = 0
@@ -99,7 +104,11 @@ class Player27():
 			cells = []
 			for z in next_moves:
 				cells.append(z[0])
+			self.ALPHA_BETA_DEPTH += 1
 
+		# if old_next_moves == []:
+		# 	old_next_moves = copy.deepcopy(next_moves)
+		# else:
 		for i in next_moves:
 			for j in old_next_moves:
 				if i[0] == j[0]:
