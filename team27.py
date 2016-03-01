@@ -15,6 +15,8 @@ class Player27():
 		self.start_time = 0.0
 		self.ALLOWED_TIME = 11.5	# Allowed time for each move
 		self.freemoveflag = 0      # Flag to check if current move results in free move
+		self.center_cells = [(1,1), (4,4), (7,7), (1,4), (1,7), (4,1), (4,7), (7,1), (7,4)]		#List of all center cells
+		self.timedout = False	#To check whether a possible cell at the root level is fully evaluated
 
 	def move(self, temp_board, temp_block, old_move, flag):
 		# board: is the list of lists that represents the 9x9 grid
@@ -41,6 +43,7 @@ class Player27():
 			return (cells[0][0], cells[0][1])
 
 		next_moves = []
+		old_next_moves = []
 
 		#Search depth optimization. TODO : Modify and find optimum, may try IDS too
 		if (len(cells) >= 3):
@@ -54,6 +57,7 @@ class Player27():
 			if time.time() - self.start_time >= self.ALLOWED_TIME:
 				break
 			self.ALPHA_BETA_DEPTH += 1
+			old_next_moves = copy.deepcopy(next_moves)
 			next_moves = []
 			minvalue = 0
 			for cell in cells:
@@ -70,6 +74,8 @@ class Player27():
 
 				end_result = self.__check_end(successor_block)
 
+				self.timedout = False
+
 				if end_result == 2:
 					return cell
 
@@ -78,6 +84,9 @@ class Player27():
 
 				else:	
 					minvalue = self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, successor_block, cell, flag, successor_cells)
+
+				if self.timedout == True:
+					break
 
 				# Penalizes the move resulting in freemove for opponent
 				#if (successor_freemoveflag == 1):
@@ -91,11 +100,22 @@ class Player27():
 			for z in next_moves:
 				cells.append(z[0])
 
-		#print next_moves
+		for i in next_moves:
+			for j in old_next_moves:
+				if i[0] == j[0]:
+					j = i
+
+		print old_next_moves
 		print self.ALPHA_BETA_DEPTH,"ALPHA_BETA_DEPTH"
-		_, best_value = max(next_moves, key=lambda x: x[1])		#Stores coordinates, value in _, best_value respectively.. lamba function - sorting key... Choose "max" from amongst "mins" as we are "max"
+		_, best_value = max(old_next_moves, key=lambda x: x[1])		#Stores coordinates, value in _, best_value respectively.. lamba function - sorting key... Choose "max" from amongst "mins" as we are "max"
 		
-		return random.choice([best_action for best_action, val in next_moves if val == best_value])	#If many choices with equal reward, choose randomly..Python syntactic sugar!!
+		choices = [cell for cell, val in old_next_moves if val == best_value]
+		not_center = [cell for cell in choices if cell not in self.center_cells]
+		if not_center != []:
+			return random.choice(not_center)
+		else:
+			return random.choice(choices)
+		#return random.choice([cell for cell, val in next_moves if val == best_value])	#If many choices with equal reward, choose randomly..Python syntactic sugar!!
 
 	# #Time out handler
 	# def handler(signum, frame):
@@ -177,6 +197,8 @@ class Player27():
 	def __min_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(MAX), beta=(MAX)):	
 		#Evaluate state if terminal test results in a true
 		if self.terminal_test(temp_board, depth, temp_block) or ((time.time() - self.start_time) >= self.ALLOWED_TIME):
+			if (time.time() - self.start_time) >= self.ALLOWED_TIME:
+				self.timedout = True
 			return self.__eval_state(temp_board, temp_block, flag)
 
 		val = (MAX)
@@ -227,6 +249,8 @@ class Player27():
 	def __max_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(MAX), beta=(MAX)):
 		#Evaluate state if terminal test results in a true
 		if self.terminal_test(temp_board, depth, temp_block) or ((time.time() - self.start_time) >= self.ALLOWED_TIME):
+			if (time.time() - self.start_time) >= self.ALLOWED_TIME:
+				self.timedout = True
 			return self.__eval_state(temp_board, temp_block, flag)
 
 		val = -(MAX)
