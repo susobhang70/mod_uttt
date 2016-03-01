@@ -55,6 +55,7 @@ class Player27():
 				break
 			self.ALPHA_BETA_DEPTH += 1
 			next_moves = []
+			minvalue = 0
 			for cell in cells:
 				self.toggle = False
 				successor_board = self.generate_successor(temp_board, cell, flag)
@@ -67,10 +68,16 @@ class Player27():
 				# Stores the flag if the the played move results in freemove
 				successor_freemoveflag = self.freemoveflag
 
-				if(self.__check_end(successor_block)):
+				end_result = self.__check_end(successor_block)
+
+				if end_result == 2:
 					return cell
 
-				minvalue = self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, successor_block, cell, flag, successor_cells)
+				elif end_result == 0:
+					minvalue = self.__eval_state(successor_board, successor_block, flag)
+
+				else:	
+					minvalue = self.__min_val_ab(successor_board, self.ALPHA_BETA_DEPTH, successor_block, cell, flag, successor_cells)
 
 				# Penalizes the move resulting in freemove for opponent
 				#if (successor_freemoveflag == 1):
@@ -174,6 +181,8 @@ class Player27():
 
 		val = (MAX)
 
+		maxvalue = 0
+
 		#Get list of empty valid cells, TODO : again may need to work on move ordering
 		# blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
 		# cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
@@ -192,10 +201,16 @@ class Player27():
 			# Stores the flag if the the played move results in freemove
 			successor_freemoveflag = self.freemoveflag
 
-			if(self.__check_end(successor_block)):
+			end_result = self.__check_end(successor_block)
+
+			if end_result == 2:
 				return 0
 
-			maxvalue = self.__max_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
+			elif end_result == 0:
+				maxvalue = self.__eval_state(successor_board, successor_block, flag)
+
+			else:
+				maxvalue = self.__max_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
 
 			# Penalizes the move resulting in freemove for opponent
 			#if (successor_freemoveflag == 1):
@@ -216,6 +231,8 @@ class Player27():
 
 		val = -(MAX)
 
+		minvalue = 0
+
 		#Get list of empty valid cells, TODO : again may need to work on move ordering
 		# blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
 		# cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
@@ -234,10 +251,16 @@ class Player27():
 			# Stores the flag if the the played move results in freemove
 			successor_freemoveflag = self.freemoveflag
 
-			if(self.__check_end(successor_block)):
+			end_result = self.__check_end(successor_block)
+
+			if end_result == 2:
 				return 1000
 
-			minvalue = self.__min_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
+			elif end_result == 0:
+				minvalue = self.__eval_state(successor_board, successor_block, flag)
+
+			else:
+				minvalue = self.__min_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
 
 			# Penalizes the move resulting in freemove for opponent
 			#if (successor_freemoveflag == 1):
@@ -259,7 +282,6 @@ class Player27():
 
 	#Simple terminal test.. TODO : Possibilities to improve the terminal test
 	def terminal_test(self, temp_board, depth, temp_block):
-		# if depth == 0 or self.__check_end(temp_block) == True:
 		if depth == 0:
 			return True
 		else:
@@ -547,25 +569,26 @@ class Player27():
 		return block
 
 	#Checks if the game has ended
+	#Return 2 for win, 1 for not ended, 0 for draw
 	def __check_end(self, block):
 		for i in [0, 3, 6]:
 			if block[i + 0] == block[i + 1] and block[i + 1] == block[i + 2] and (block[i] == 'x' or block[i] == 'o'):
-				return True
+				return 2
 		for i in [0, 1, 2]:
 			if block[i + 0] == block[i + 3] and block[i + 3] == block[i + 6] and (block[i] == 'x' or block[i] == 'o'):
-				return True
+				return 2
 
 		if block[0] == block[4] and block[4] == block[8] and (block[0] == 'x' or block[0] == 'o'):
-			return True
+			return 2
 
 		if block[2] == block[4] and block[4] == block[6] and (block[2] == 'x' or block[2] == 'o'):
-			return True
+			return 2
 
 		for i in xrange(9):
 			if block[i] == '-':
-				return False
+				return 1
 
-		return True
+		return 0
 
 	#Used in score_big_board while evaluating probabilites
 	def __check_xo_together(self, block, arrs):
