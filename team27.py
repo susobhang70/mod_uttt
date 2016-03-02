@@ -1,57 +1,55 @@
 import random
-import copy		#For copy.deepcopy() 
-import sys 		#For sys.exit()
-import time     #For timer functions
-
-MAX = 9223372036854775807	#For MAX used 
+import copy					# For copy.deepcopy() 
+import time     			# For timer functions
 
 class Player27():
+	'''This class and associated methods calculate the best move when move function is called by the game engine with the class object'''
 
-	#TODO : Can have a timer with the help of which best move seen so far can be returned just before the timer runs out
 	def __init__(self):
-		self.ALPHA_BETA_DEPTH = 6	#The depth of the search tree
-		self.toggle = False			#toggle is used in generate_successor(). It is used to decide whether to place x or o in the current turn
-		#TODO : toggle may be slowing the code. May optimize for speed using another mechanism
+		'''Initializes the variables'''
+		self.ALPHA_BETA_DEPTH = 6	# The depth of the search tree
+		self.toggle = False			# toggle is used in generate_successor(). It is used to decide whether to place x or o in the current turn
 		self.start_time = 0.0
 		self.ALLOWED_TIME = 11.5	# Allowed time for each move
-		self.freemoveflag = 0      # Flag to check if current move results in free move
-		self.center_cells = [(1,1), (4,4), (7,7), (1,4), (1,7), (4,1), (4,7), (7,1), (7,4)]		#List of all center cells
-		self.timedout = False	#To check whether a possible cell at the root level is fully evaluated
+		self.freemoveflag = 0       # Flag to check if current move results in free move
+		self.center_cells = [(1,1), (4,4), (7,7), (1,4), (1,7), (4,1), (4,7), (7,1), (7,4)]		# List of all center cells
+		self.timedout = False		# To check whether a possible cell at the root level is fully evaluated
+		self.MAX = 9223372036854775807	# For self.MAX used
 
 	def move(self, temp_board, temp_block, old_move, flag):
+		'''Called by game engine. Calculates the best move for the player and returns. Big function due to avoid method call overhead (12 seconds time limit)'''
 		# board: is the list of lists that represents the 9x9 grid
 		# board[i] can be 'x', 'o' or '-'
 		# block: is a list that represents if a block is won or available to play in
 		# block[i] can be 'x', 'o' or '-' or 'D'
 		# old_move: is a tuple of integers representing co-ordintates of the last move made. For the first move of game it is (-1,-1)
 		# flag: is your marker. it can be 'x' or 'o'.
-		#List of permitted blocks, based on old move.
+		# List of permitted blocks, based on old move.
 
-		#If moving first, place in the centre of centre
+		# If moving first, place in the centre of centre
 		if(old_move[0] == -1 and old_move[1] == -1):
 			return (4,4)
 
-		# deepcopy the temp block to avoid shit
+		# deepcopy the temp block to avoid changes to temp block
 		new_temp_block = copy.deepcopy(temp_block)
 
-		#Get list of empty valid cells
-		blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
-		cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
+		# Get list of empty valid cells
+		blocks_allowed  = self.__get_valid_blocks(old_move, temp_block)
+		cells = self.__get_valid_cells(temp_board, blocks_allowed, temp_block)
 
-		#If only one move available, don't waste time further
+		# If only one move available, don't waste time further
 		if(len(cells) == 1):
 			return (cells[0][0], cells[0][1])
 
 		next_moves = []
 		old_next_moves = []
 
-		#Search depth optimization. TODO : Modify and find optimum, may try IDS too
 		if len(cells) in (1,2):
-			self.ALPHA_BETA_DEPTH = 5	#If less number of choices, look deeper
+			self.ALPHA_BETA_DEPTH = 5	# If less number of choices, look deeper
 		elif len(cells) in (3,4,5):
 			self.ALPHA_BETA_DEPTH = 4
 		elif len(cells) in (6,7):
-			self.ALPHA_BETA_DEPTH = 3	#If more number of choices, look shallower
+			self.ALPHA_BETA_DEPTH = 3	# If more number of choices, look shallower
 		else:
 			self.ALPHA_BETA_DEPTH = 2	
 		
@@ -69,8 +67,8 @@ class Player27():
 				successor_block = self.__update_block(successor_board, new_temp_block, cell)
 
 				# Calculates valid moves for opponent
-				successor_blocks_allowed = self.determine_blocks_allowed(cell, successor_block)
-				successor_cells = self.get_empty_out_of(successor_board, successor_blocks_allowed, successor_block)
+				successor_blocks_allowed = self.__get_valid_blocks(cell, successor_block)
+				successor_cells = self.__get_valid_cells(successor_board, successor_blocks_allowed, successor_block)
 
 				# Stores the flag if the the played move results in freemove
 				successor_freemoveflag = self.freemoveflag
@@ -91,13 +89,12 @@ class Player27():
 				if self.timedout == True:
 					break
 
-				#Score increase on winning center block
+				# Score increase on winning center block
 				if (temp_block[4] == '-' and successor_block[4] == flag):
 					minvalue *= 1.5
 
-				#TODO : May need to work on move ordering to make alpha beta pruning more effective
-				next_moves.append((cell, minvalue))	#From each successor position, call "min"
-				#print next_moves
+				next_moves.append((cell, minvalue))	# From each successor position, call "min"
+				# print next_moves
 			sorted(next_moves, key=lambda x: x[1], reverse = True)
 
 			if next_moves != [] and next_moves[0][1] == 0:
@@ -109,16 +106,16 @@ class Player27():
 					cells.append(z[0])
 			self.ALPHA_BETA_DEPTH += 1
 
-		# if old_next_moves == []:
-		# 	old_next_moves = copy.deepcopy(next_moves)
-		# else:
-		for i in next_moves:
-			for j in old_next_moves:
-				if i[0] == j[0]:
-					j = i
+		if old_next_moves == []:
+			old_next_moves = copy.deepcopy(next_moves)
+		else:
+			for i in next_moves:
+				for j in old_next_moves:
+					if i[0] == j[0]:
+						j = i
 
-		print old_next_moves
-		print self.ALPHA_BETA_DEPTH,"ALPHA_BETA_DEPTH"
+		# print old_next_moves
+		# print self.ALPHA_BETA_DEPTH,"ALPHA_BETA_DEPTH"
 		_, best_value = max(old_next_moves, key=lambda x: x[1])		#Stores coordinates, value in _, best_value respectively.. lamba function - sorting key... Choose "max" from amongst "mins" as we are "max"
 		
 		choices = [cell for cell, val in old_next_moves if val == best_value]
@@ -128,70 +125,68 @@ class Player27():
 		else:
 			return random.choice(choices)
 
-	#This is lifted from evaluator_code.py.. TODO : Will have to change as per rules
-	def determine_blocks_allowed(self, old_move, block_stat):
-		blocks_allowed = []
-		if old_move[0] % 3 == 0 and old_move[1] % 3 == 0:
-			blocks_allowed = [1,3]
-		elif old_move[0] % 3 == 0 and old_move[1] % 3 == 2:
-			blocks_allowed = [1,5]
-		elif old_move[0] % 3 == 2 and old_move[1] % 3 == 0:
-			blocks_allowed = [3,7]
-		elif old_move[0] % 3 == 2 and old_move[1] % 3 == 2:
-			blocks_allowed = [5,7]
-		elif old_move[0] % 3 == 0 and old_move[1] % 3 == 1:
-			blocks_allowed = [0,2]
-		elif old_move[0] % 3 == 1 and old_move[1] % 3 == 0:
-			blocks_allowed = [0,6]
-		elif old_move[0] % 3 == 2 and old_move[1] % 3 == 1:
-			blocks_allowed = [6,8]
-		elif old_move[0] % 3 == 1 and old_move[1] % 3 == 2:
-			blocks_allowed = [2,8]
-		elif old_move[0] % 3 == 1 and old_move[1] % 3 == 1:
-			blocks_allowed = [4]
-		else:
-			sys.exit(1)
-		final_blocks_allowed = []
-		for i in blocks_allowed:
-			if block_stat[i] == '-':
-				final_blocks_allowed.append(i)
-		return final_blocks_allowed
+	# Determines the valid blocks from block stat
+	def __get_valid_blocks(self, previous_move, block):
+		allowed_blocks = []
+		if previous_move[0] % 3 == 0 and previous_move[1] % 3 == 0:
+			allowed_blocks = [1, 3]
+		elif previous_move[0] % 3 == 0 and previous_move[1] % 3 == 2:
+			allowed_blocks = [1, 5]
+		elif previous_move[0] % 3 == 2 and previous_move[1] % 3 == 0:
+			allowed_blocks = [3, 7]
+		elif previous_move[0] % 3 == 2 and previous_move[1] % 3 == 2:
+			allowed_blocks = [5, 7]
+		elif previous_move[0] % 3 == 0 and previous_move[1] % 3 == 1:
+			allowed_blocks = [0, 2]
+		elif previous_move[0] % 3 == 1 and previous_move[1] % 3 == 0:
+			allowed_blocks = [0, 6]
+		elif previous_move[0] % 3 == 2 and previous_move[1] % 3 == 1:
+			allowed_blocks = [6, 8]
+		elif previous_move[0] % 3 == 1 and previous_move[1] % 3 == 2:
+			allowed_blocks = [2, 8]
+		elif previous_move[0] % 3 == 1 and previous_move[1] % 3 == 1:
+			allowed_blocks = [4]
 
-	#This is lifted from evaluator_code.py.. TODO : Will have to change as per rules
-	#Gets empty cells from the list of possible blocks. Hence gets valid moves. 
-	def get_empty_out_of(self, gameb, blal,block_stat):
+		valid_blocks = []
+		for i in allowed_blocks:
+			if block[i] == '-':
+				valid_blocks.append(i)
+		return valid_blocks
+
+	# Gets empty cells from the list of possible blocks. Hence gets valid moves. 
+	def __get_valid_cells(self, board, allowed_blocks, block):
+
 		cells = []  # it will be list of tuples
-		#Iterate over possible blocks and get empty cells
-		for idb in blal:
-			id1 = idb/3
-			id2 = idb%3
-			for i in range(id1*3,id1*3+3):
-				for j in range(id2*3,id2*3+3):
-					if gameb[i][j] == '-':
-						cells.append((i,j))
+		# Iterate over possible blocks and get empty cells
+		for a_block in allowed_blocks:
+			block_x = a_block / 3
+			block_y = a_block % 3
+			for i in range(block_x * 3, block_x * 3 + 3):
+				for j in range(block_y * 3, block_y * 3 + 3):
+					if board[i][j] == '-':
+						cells.append((i, j))
 
 		# If all the possible blocks are full, you can move anywhere
 		if cells == []:
 			self.freemoveflag = 1
-			new_blal = []
-			all_blal = [0,1,2,3,4,5,6,7,8]
-			for i in all_blal:
-				if block_stat[i]=='-':
-					new_blal.append(i)
+			new_allowed_blocks = []
+			for i in xrange(9):
+				if block[i]=='-':
+					new_allowed_blocks.append(i)
 
-			for idb in new_blal:
-				id1 = idb/3
-				id2 = idb%3
-				for i in range(id1*3,id1*3+3):
-					for j in range(id2*3,id2*3+3):
-						if gameb[i][j] == '-':
-							cells.append((i,j))
+			for a_block in new_allowed_blocks:
+				block_x = a_block / 3
+				block_y = a_block % 3
+				for i in range(block_x * 3, block_x * 3 + 3):
+					for j in range(block_y * 3, block_y * 3 + 3):
+						if board[i][j] == '-':
+							cells.append((i, j))
 
 		else:
 			self.freemoveflag = 0
 		return cells
 
-	#Primarily lifted from evaluator_code.py but toggle used to ensure correct o or x is placed
+	# Primarily lifted from evaluator_code.py but toggle used to ensure correct o or x is placed
 	def generate_successor(self, temp_board, cell, flag):
 		if self.toggle == True:
 			flag = self.get_opp(flag)
@@ -199,15 +194,15 @@ class Player27():
 		board[cell[0]][cell[1]] = flag
 		return board
 
-	#min from Russell and Norvig
-	def __min_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(MAX), beta=(MAX)):	
+	# min from Russell and Norvig
+	def __min_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(self.MAX), beta=(self.MAX)):	
 		#Evaluate state if terminal test results in a true
 		if self.terminal_test(temp_board, depth, temp_block) or ((time.time() - self.start_time) >= self.ALLOWED_TIME):
 			if (time.time() - self.start_time) >= self.ALLOWED_TIME:
 				self.timedout = True
 			return self.__eval_state(temp_board, temp_block, flag)
 
-		val = (MAX)
+		val = (self.MAX)
 
 		maxvalue = 0
 
@@ -217,8 +212,8 @@ class Player27():
 			successor_block = self.__update_block(successor_board, temp_block, cell)
 
 			# Calculates valid moves for opponent
-			successor_blocks_allowed = self.determine_blocks_allowed(cell, successor_block)
-			successor_cells = self.get_empty_out_of(successor_board, successor_blocks_allowed, successor_block)
+			successor_blocks_allowed = self.__get_valid_blocks(cell, successor_block)
+			successor_cells = self.__get_valid_cells(successor_board, successor_blocks_allowed, successor_block)
 
 			# Stores the flag if the the played move results in freemove
 			successor_freemoveflag = self.freemoveflag
@@ -250,14 +245,14 @@ class Player27():
 		return val
 
 	#max from Russell and Norvig
-	def __max_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(MAX), beta=(MAX)):
+	def __max_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(self.MAX), beta=(self.MAX)):
 		#Evaluate state if terminal test results in a true
 		if self.terminal_test(temp_board, depth, temp_block) or ((time.time() - self.start_time) >= self.ALLOWED_TIME):
 			if (time.time() - self.start_time) >= self.ALLOWED_TIME:
 				self.timedout = True
 			return self.__eval_state(temp_board, temp_block, flag)
 
-		val = -(MAX)
+		val = -(self.MAX)
 
 		minvalue = 0
 
@@ -267,8 +262,8 @@ class Player27():
 			successor_block = self.__update_block(successor_board, temp_block, cell)
 
 			# Calculates valid moves for opponent
-			successor_blocks_allowed = self.determine_blocks_allowed(cell, successor_block)
-			successor_cells = self.get_empty_out_of(successor_board, successor_blocks_allowed, successor_block)
+			successor_blocks_allowed = self.__get_valid_blocks(cell, successor_block)
+			successor_cells = self.__get_valid_cells(successor_board, successor_blocks_allowed, successor_block)
 
 			# Stores the flag if the the played move results in freemove
 			successor_freemoveflag = self.freemoveflag
@@ -306,14 +301,12 @@ class Player27():
 		else:
 			return 'x'
 
-	#Simple terminal test.. TODO : Possibilities to improve the terminal test
 	def terminal_test(self, temp_board, depth, temp_block):
 		if depth == 0:
 			return True
 		else:
 			return False
 
-	#Evaluation Function TODO : Add a lot of heuristics
 	def __eval_state(self, temp_board, temp_block, flag):
 		uttt_board = copy.deepcopy(temp_board)
 		mini_board = copy.deepcopy(temp_block)
