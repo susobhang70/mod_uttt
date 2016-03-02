@@ -187,8 +187,6 @@ def update_lists(game_board, block_stat, move_ret, fl):
 			if game_board[i][j] == '-':
 				flag = 1
 
-	if flag == 0:
-		block_stat[block_no] = 'D'
 
 	if block_stat[block_no] == '-':
 		if game_board[id1*3][id2*3] == game_board[id1*3+1][id2*3+1] and game_board[id1*3+1][id2*3+1] == game_board[id1*3+2][id2*3+2] and game_board[id1*3+1][id2*3+1] != '-' and game_board[id1*3+1][id2*3+1] != 'D':
@@ -205,6 +203,8 @@ def update_lists(game_board, block_stat, move_ret, fl):
                         if game_board[i][id2*3]==game_board[i][id2*3+1] and game_board[i][id2*3+1] == game_board[i][id2*3+2] and game_board[i][id2*3] != '-' and game_board[i][id2*3] != 'D':
                                 mflg = 1
                                 break
+	if flag == 0:
+		block_stat[block_no] = 'D'
 	if mflg == 1:
 		block_stat[block_no] = fl
 	
@@ -281,23 +281,44 @@ def print_lists(gb, bs):
 	
 def generate_situation(board, block):
  
-    board = [['o', '-', '-', '-', '-', '-', '-', '-', '-'],
-             ['x', '-', '-', '-', '-', '-', '-', '-', '-'],
-             ['-', '-', 'o', 'o', '-', 'o', '-', '-', '-'],
+    # board = [['o', '-', '-', '-', '-', '-', '-', '-', '-'],
+    #          ['x', '-', '-', '-', '-', '-', '-', '-', '-'],
+    #          ['-', '-', 'o', 'o', '-', 'o', '-', '-', '-'],
  
-             ['-', '-', '-', 'x', '-', '-', 'x', '-', '-'],
-             ['-', '-', '-', 'x', 'o', '-', '-', '-', 'x'],
+    #          ['-', '-', '-', 'x', '-', '-', 'x', '-', '-'],
+    #          ['-', '-', '-', 'x', 'o', '-', '-', '-', 'x'],
+    #          ['x', 'x', 'x', '-', '-', '-', '-', '-', 'x'],
+ 
+    #          ['-', '-', '-', '-', 'o', '-', 'o', '-', '-'],
+    #          ['-', '-', '-', '-', 'o', '-', '-', 'o', '-'],
+    #          ['-', '-', '-', '-', 'o', '-', '-', 'x', 'o']]
+
+
+    board = [['-', '-', '-', 'x', 'o', 'o', 'x', '-', 'x'],
+             ['-', 'x', '-', 'o', 'x', 'x', '-', '-', 'o'],
+             ['-', 'o', 'o', 'o', 'o', '-', '-', '-', 'x'],
+ 
+             ['-', '-', '-', 'o', '-', '-', 'x', '-', '-'],
+             ['x', '-', 'x', '-', 'x', '-', 'x', '-', 'o'],
              ['x', 'x', 'x', '-', '-', '-', '-', '-', 'x'],
  
-             ['-', '-', '-', '-', 'o', '-', 'o', '-', '-'],
+             ['-', '-', 'x', '-', 'o', '-', 'o', '-', '-'],
              ['-', '-', '-', '-', 'o', '-', '-', 'o', '-'],
-             ['-', '-', '-', '-', 'o', '-', '-', 'x', 'o']]
+             ['x', 'x', 'o', '-', 'o', '-', '-', 'x', 'o']]
+
+
  
+    # block = ['-', '-', '-',
+    #          'x', '-', '-',
+    #          '-', 'o', 'o']
+
     block = ['-', '-', '-',
-             'x', '-', '-',
-             '-', 'o', 'o']
+             'o', 'o', 'x',
+             '-', 'x', 'x']
  
-    old_move = (7, 7)
+ 
+    # old_move = (7, 7)
+    old_move = (6, 2)
  
     return board, block, old_move
 
@@ -310,8 +331,8 @@ def simulate(obj1,obj2):
 	pl2 = obj2
 
 	# Player with flag 'x' will start the game
-	pl1_fl = 'x'
-	pl2_fl = 'o'
+	pl1_fl = 'o'
+	pl2_fl = 'x'
 
 	old_move = (-1, -1) # For the first move
 

@@ -93,17 +93,22 @@ class Player27():
 				if self.timedout == True:
 					break
 
-				# Penalizes the move resulting in freemove for opponent
-				#if (successor_freemoveflag == 1):
-					#minvalue -= 50
+				#Score increase on winning center block
+				if (temp_block[4] == '-' and successor_block[4] == flag):
+					minvalue *= 1.5
 
 				#TODO : May need to work on move ordering to make alpha beta pruning more effective
 				next_moves.append((cell, minvalue))	#From each successor position, call "min"
 				#print next_moves
 			sorted(next_moves, key=lambda x: x[1], reverse = True)
+
+			if next_moves[0][1] == 0:
+				return next_moves[0][0]
+
 			cells = []
 			for z in next_moves:
-				cells.append(z[0])
+				if z[1] != 0:
+					cells.append(z[0])
 			self.ALPHA_BETA_DEPTH += 1
 
 		# if old_next_moves == []:
@@ -243,6 +248,10 @@ class Player27():
 			else:
 				maxvalue = self.__max_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
 
+			#Penalty if opponent wins center block
+			if (temp_block[4] == '-' and successor_block[4] == self.get_opp(flag)):
+				maxvalue /= 1.5
+
 			# Penalizes the move resulting in freemove for opponent
 			if (successor_freemoveflag == 1 and (depth - 1) == 0):
 				maxvalue += 10
@@ -294,6 +303,10 @@ class Player27():
 
 			else:
 				minvalue = self.__min_val_ab(successor_board, depth - 1, successor_block, cell, flag, successor_cells, alpha, beta)
+
+			#Score boost if player wins center
+			if (temp_block[4] == '-' and successor_block[4] == flag):
+				minvalue *= 1.5
 
 			# Penalizes the move resulting in freemove for opponent
 			if (successor_freemoveflag == 1 and (depth - 1) == 0):
