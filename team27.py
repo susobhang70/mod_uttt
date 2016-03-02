@@ -14,7 +14,6 @@ class Player27():
 		self.freemoveflag = 0       # Flag to check if current move results in free move
 		self.center_cells = [(1,1), (4,4), (7,7), (1,4), (1,7), (4,1), (4,7), (7,1), (7,4)]		# List of all center cells
 		self.timedout = False		# To check whether a possible cell at the root level is fully evaluated
-		self.MAX = 9223372036854775807	# For self.MAX used
 
 	def move(self, temp_board, temp_block, old_move, flag):
 		'''Called by game engine. Calculates the best move for the player and returns. Big function due to avoid method call overhead (12 seconds time limit)'''
@@ -195,14 +194,14 @@ class Player27():
 		return board
 
 	# min from Russell and Norvig
-	def __min_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(self.MAX), beta=(self.MAX)):	
+	def __min_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(9223372036854775807), beta=(9223372036854775807)):	
 		#Evaluate state if terminal test results in a true
 		if self.terminal_test(temp_board, depth, temp_block) or ((time.time() - self.start_time) >= self.ALLOWED_TIME):
 			if (time.time() - self.start_time) >= self.ALLOWED_TIME:
 				self.timedout = True
 			return self.__eval_state(temp_board, temp_block, flag)
 
-		val = (self.MAX)
+		val = (9223372036854775807)
 
 		maxvalue = 0
 
@@ -245,14 +244,14 @@ class Player27():
 		return val
 
 	#max from Russell and Norvig
-	def __max_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(self.MAX), beta=(self.MAX)):
+	def __max_val_ab(self, temp_board, depth, temp_block, old_move, flag, cells, alpha=-(9223372036854775807), beta=(9223372036854775807)):
 		#Evaluate state if terminal test results in a true
 		if self.terminal_test(temp_board, depth, temp_block) or ((time.time() - self.start_time) >= self.ALLOWED_TIME):
 			if (time.time() - self.start_time) >= self.ALLOWED_TIME:
 				self.timedout = True
 			return self.__eval_state(temp_board, temp_block, flag)
 
-		val = -(self.MAX)
+		val = -(9223372036854775807)
 
 		minvalue = 0
 
