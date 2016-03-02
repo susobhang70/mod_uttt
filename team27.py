@@ -47,15 +47,15 @@ class Player27():
 
 		#Search depth optimization. TODO : Modify and find optimum, may try IDS too
 		if len(cells) in (1,2):
-			self.ALPHA_BETA_DEPTH = 6	#If less number of choices, look deeper
+			self.ALPHA_BETA_DEPTH = 5	#If less number of choices, look deeper
 		elif len(cells) in (3,4,5):
-			self.ALPHA_BETA_DEPTH = 5
+			self.ALPHA_BETA_DEPTH = 4
 		elif len(cells) in (6,7):
-			self.ALPHA_BETA_DEPTH = 4	#If more number of choices, look shallower
+			self.ALPHA_BETA_DEPTH = 3	#If more number of choices, look shallower
 		elif len(cells) in (8,9):
-			self.ALPHA_BETA_DEPTH = 3
-		else:
 			self.ALPHA_BETA_DEPTH = 2
+		else:
+			self.ALPHA_BETA_DEPTH = 1
 		
 		self.start_time = time.time()
 
