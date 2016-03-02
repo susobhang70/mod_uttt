@@ -331,8 +331,8 @@ def simulate(obj1,obj2):
 	pl2 = obj2
 
 	# Player with flag 'x' will start the game
-	pl1_fl = 'o'
-	pl2_fl = 'x'
+	pl1_fl = 'x'
+	pl2_fl = 'o'
 
 	old_move = (-1, -1) # For the first move
 
@@ -342,7 +342,7 @@ def simulate(obj1,obj2):
 	p1_pts=0
 	p2_pts=0
 
-	game_board, block_stat, old_move = generate_situation(game_board, block_stat)
+	#game_board, block_stat, old_move = generate_situation(game_board, block_stat)
 	print_lists(game_board, block_stat)
 
 	while(1): # Main game loop

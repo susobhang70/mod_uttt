@@ -50,8 +50,10 @@ class Player27():
 			self.ALPHA_BETA_DEPTH = 5	#If less number of choices, look deeper
 		elif len(cells) in (3,4,5):
 			self.ALPHA_BETA_DEPTH = 4
-		else:
+		elif len(cells) in (6,7):
 			self.ALPHA_BETA_DEPTH = 3	#If more number of choices, look shallower
+		else:
+			self.ALPHA_BETA_DEPTH = 2	
 		
 		self.start_time = time.time()
 
@@ -98,7 +100,7 @@ class Player27():
 				#print next_moves
 			sorted(next_moves, key=lambda x: x[1], reverse = True)
 
-			if next_moves[0][1] == 0:
+			if next_moves != [] and next_moves[0][1] == 0:
 				return next_moves[0][0]
 
 			cells = []
@@ -125,12 +127,6 @@ class Player27():
 			return random.choice(not_center)
 		else:
 			return random.choice(choices)
-		#return random.choice([cell for cell, val in next_moves if val == best_value])	#If many choices with equal reward, choose randomly..Python syntactic sugar!!
-
-	# #Time out handler
-	# def handler(signum, frame):
-	#     #print 'Signal handler called with signal', signum
-	#     raise TimedOutExc()
 
 	#This is lifted from evaluator_code.py.. TODO : Will have to change as per rules
 	def determine_blocks_allowed(self, old_move, block_stat):
@@ -215,12 +211,6 @@ class Player27():
 
 		maxvalue = 0
 
-		#Get list of empty valid cells, TODO : again may need to work on move ordering
-		# blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
-		# cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
-
-		# print old_move, depth
-
 		for cell in cells:
 			self.toggle = True
 			successor_board = self.generate_successor(temp_board, cell, flag)
@@ -270,12 +260,6 @@ class Player27():
 		val = -(MAX)
 
 		minvalue = 0
-
-		#Get list of empty valid cells, TODO : again may need to work on move ordering
-		# blocks_allowed  = self.determine_blocks_allowed(old_move, temp_block)
-		# cells = self.get_empty_out_of(temp_board, blocks_allowed, temp_block)
-
-		# print old_move, depth
 
 		for cell in cells:
 			self.toggle = False
