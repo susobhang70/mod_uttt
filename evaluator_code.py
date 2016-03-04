@@ -17,8 +17,8 @@ import sys
 import random
 import signal
 from team27 import Player27
-from foolish_player27 import FoolishPlayer27
-from mark1_team27 import Mark1Player27
+from NaiveAI import FoolishPlayer27
+from OldAI import Mark1Player27
 from team64 import Player64
 
 def handler(signum, frame):
