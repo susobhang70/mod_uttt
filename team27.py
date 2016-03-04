@@ -90,7 +90,24 @@ class Player27():
 
 				# Score increase on winning center block
 				if (temp_block[4] == '-' and successor_block[4] == flag):
-					minvalue *= 1.5
+					minvalue *= 1.3
+
+				# If cell not in center block
+				if ((int(cell[0]/3) * 3) + int(cell[1]/3)) != 4:
+					top_x = cell[0] - (cell[0] % 3)
+					top_y = cell[1] - (cell[1] % 3)
+					# Don't play through center
+					if successor_board[top_x][top_y] == successor_board[top_x + 2][top_y + 2] and successor_board[top_x + 1][top_y + 1] == '-' and successor_board[top_x][top_y] == flag:
+						#if random.choice([0,1]) == 1:
+						minvalue -= 1
+					if successor_board[top_x + 2][top_y] == successor_board[top_x][top_y + 2] and successor_board[top_x + 1][top_y + 1] == '-' and successor_board[top_x][top_y + 2] == flag:
+						#if random.choice([0,1]) == 1:
+						minvalue -= 1
+
+					# Don't play in center unless its very important
+					if cell in self.center_cells and successor_block[4] == '-':
+						#if random.choice([0,1]) == 1:
+					 	minvalue -= 1
 
 				next_moves.append((cell, minvalue))	# From each successor position, call "min"
 				# print next_moves
@@ -113,7 +130,7 @@ class Player27():
 					if i[0] == j[0]:
 						j = i
 
-		# print old_next_moves
+		print old_next_moves
 		# print self.ALPHA_BETA_DEPTH,"ALPHA_BETA_DEPTH"
 		_, best_value = max(old_next_moves, key=lambda x: x[1])		#Stores coordinates, value in _, best_value respectively.. lamba function - sorting key... Choose "max" from amongst "mins" as we are "max"
 		
@@ -230,7 +247,7 @@ class Player27():
 
 			#Penalty if opponent wins center block
 			if (temp_block[4] == '-' and successor_block[4] == self.get_opp(flag)):
-				maxvalue /= 1.5
+				maxvalue *= 0.9
 
 			# Penalizes the move resulting in freemove for opponent
 			if (successor_freemoveflag == 1 and (depth - 1) == 0):
@@ -280,7 +297,7 @@ class Player27():
 
 			#Score boost if player wins center
 			if (temp_block[4] == '-' and successor_block[4] == flag):
-				minvalue *= 1.5
+				minvalue *= 1.1
 
 			# Penalizes the move resulting in freemove for opponent
 			if (successor_freemoveflag == 1 and (depth - 1) == 0):
@@ -314,7 +331,7 @@ class Player27():
 		#Store probabilities of winning a mini board
 		for val in xrange(9):
 			if mini_board[val] == '-':
-				temp_val = self.__evaluate_Mini_Board(uttt_board, val, flag)
+				temp_val = self.__evaluate_Mini_Board(uttt_board, temp_block, val, flag)
 				mini_board_scores.append((float(temp_val)+800.0)/1600.0)	#Max value possibly returned by __evaluate_Mini_Board is +800 and min is -800 (A board full of "flags" gives +800 while a board full of "antiflags" gives -800). So scale it between 0 and 1 as probability is needed
 			elif mini_board[val] == flag:
 				mini_board_scores.append(1.0)
@@ -326,7 +343,28 @@ class Player27():
 	
 		return val
 
-	def __evaluate_Mini_Board(self, temp_board, index, flag):
+	# Returns the lines involved in winning
+	def __get_possible_blocks(self, index):
+		if index == 0:
+			return [(1,2), (3,6), (4,8)]
+		elif index == 1:
+			return [(0,2), (4,7)]
+		elif index == 2:
+			return [(0,1), (5,8), (4,6)]
+		elif index == 3:
+			return [(0,6), (4,5)]
+		elif index == 4:
+			return [(0,8), (2,6), (1,7), (3,5)]
+		elif index == 5:
+			return [(3,4), (2,8)]
+		elif index == 6:
+			return [(0,3), (7,8), (2,4)]
+		elif index == 7:
+			return [(1,4), (6,8)]
+		elif index == 8:
+			return [(0,4), (2,5), (6,7)]
+
+	def __evaluate_Mini_Board(self, temp_board, temp_block, index, flag):
 		score = 0
 		row_num = 0
 		col_num = 0
@@ -361,6 +399,28 @@ class Player27():
 				score -= 10
 			elif anti_flags == 1 and blanks == 2:
 				score -= 1
+			elif flags == 2 and anti_flags == 1:
+				temp_combos = self.__get_possible_blocks(index)
+				for k in temp_combos:
+					selfs = 0
+					for l in (0,1):
+						if temp_block[k[l]] == flag:
+							selfs += 1
+					if selfs == 2:
+						score -= 10
+					else:
+						score -= 1
+			elif anti_flags == 2 and flags == 1:
+				temp_combos = self.__get_possible_blocks(index)
+				for k in temp_combos:
+					opps = 0
+					for l in (0,1):
+						if temp_block[k[l]] == self.get_opp(flag):
+							opps += 1
+					if opps == 2:
+						score += 10
+					else:
+						score += 1
 
 		#For cols get score
 		for i in xrange(3):
@@ -377,6 +437,28 @@ class Player27():
 				score -= 10
 			elif anti_flags == 1 and blanks == 2:
 				score -= 1
+			elif flags == 2 and anti_flags == 1:
+				temp_combos = self.__get_possible_blocks(index)
+				for k in temp_combos:
+					selfs = 0
+					for l in (0,1):
+						if temp_block[k[l]] == flag:
+							selfs += 1
+					if selfs == 2:
+						score -= 10
+					else:
+						score -= 1
+			elif anti_flags == 2 and flags == 1:
+				temp_combos = self.__get_possible_blocks(index)
+				for k in temp_combos:
+					opps = 0
+					for l in (0,1):
+						if temp_block[k[l]] == self.get_opp(flag):
+							opps += 1
+					if opps == 2:
+						score += 10
+					else:
+						score += 1
 
 		#For diag left top to bottom right get score
 		flags = 0 
@@ -402,6 +484,28 @@ class Player27():
 			score -= 10
 		elif anti_flags == 1 and blanks == 2:
 			score -= 1
+		elif flags == 2 and anti_flags == 1:
+			temp_combos = self.__get_possible_blocks(index)
+			for k in temp_combos:
+				selfs = 0
+				for l in (0,1):
+					if temp_block[k[l]] == flag:
+						selfs += 1
+				if selfs == 2:
+					score -= 10
+				else:
+					score -= 1
+		elif anti_flags == 2 and flags == 1:
+			temp_combos = self.__get_possible_blocks(index)
+			for k in temp_combos:
+				opps = 0
+				for l in (0,1):
+					if temp_block[k[l]] == self.get_opp(flag):
+						opps += 1
+				if opps == 2:
+					score += 10
+				else:
+					score += 1
 
 		#For diag right top to bottom left get score
 		flags = 0 
@@ -427,6 +531,28 @@ class Player27():
 			score -= 10
 		elif anti_flags == 1 and blanks == 2:
 			score -= 1
+		elif flags == 2 and anti_flags == 1:
+			temp_combos = self.__get_possible_blocks(index)
+			for k in temp_combos:
+				selfs = 0
+				for l in (0,1):
+					if temp_block[k[l]] == flag:
+						selfs += 1
+				if selfs == 2:
+					score -= 10
+				else:
+					score -= 1
+		elif anti_flags == 2 and flags == 1:
+			temp_combos = self.__get_possible_blocks(index)
+			for k in temp_combos:
+				opps = 0
+				for l in (0,1):
+					if temp_block[k[l]] == self.get_opp(flag):
+						opps += 1
+				if opps == 2:
+					score += 10
+				else:
+					score += 1
 			
 		return score
 

@@ -19,6 +19,7 @@ import signal
 from team27 import Player27
 from foolish_player27 import FoolishPlayer27
 from mark1_team27 import Mark1Player27
+from team64 import Player64
 
 def handler(signum, frame):
     #print 'Signal handler called with signal', signum
@@ -434,11 +435,14 @@ if __name__ == '__main__':
 		print '                2 => Human vs. AI'
 		print '                3 => Human vs. Human'
 		print '                4 => AI vs. Random player - AI starts first'
-		print '                5 => AI vs FoolishAI - AI moves first'
-		print '                6 => FoolishAI vs AI - FoolishAI moves first'
+		print '                5 => AI vs NaiveAI - AI moves first'
+		print '                6 => NaiveAI vs AI - NaiveAI moves first'
 		print '                7 => AI1 vs AI2 - AI1 moves first'
 		print '                8 => AI vs OldAI - OldAI moves first'
 		print '                9 => AI vs OldAI - AI moves first'
+		print '                10 => 27 vs 64 - 64 moves first'
+		print '                11 => 27 vs 64 - 27 moves first'
+
 		sys.exit(1)
  
 	obj1 = ''
@@ -474,6 +478,13 @@ if __name__ == '__main__':
 	elif option == '9':
 		obj1 = Player27()
 		obj2 = Mark1Player27()
+		AIFirst = 1
+	elif option == '10':
+		obj1 = Player27()
+		obj2 = Player64()
+	elif option == '11':
+		obj1 = Player27()
+		obj2 = Player64()
 		AIFirst = 1
 	else:
 		print 'Invalid option'
